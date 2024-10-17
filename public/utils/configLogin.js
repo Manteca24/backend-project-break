@@ -1,14 +1,15 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js';
 import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.1.0/firebase-auth.js';
+require('dotenv').config();
 
 const firebaseConfig = {
-    apiKey: "AIzaSyByvg0TKJGjIopY4_5ekZ7szgC6ziuKIag",
-    authDomain: "fir-auth-46ec2.firebaseapp.com",
-    projectId: "fir-auth-46ec2",
-    storageBucket: "fir-auth-46ec2.appspot.com",
-    messagingSenderId: "865385759009",
-    appId: "1:865385759009:web:58e2c5faa573e192c63e60"
-  };
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID
+};
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
