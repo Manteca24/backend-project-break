@@ -1,0 +1,66 @@
+body {
+    font-family: sans-serif;
+    background-color: white;
+}
+
+header {
+    background-color: grey;
+    color: white;
+    text-align: center;
+}
+
+nav ul {
+    list-style: none;
+}
+
+nav ul li {
+    display: inline;
+    margin-right: 10px;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+}
+
+.product-card {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin: 10px;
+    background-color: white;
+    display: inline-block;
+    width: 250px;
+    text-align: center;
+}
+
+.product-card img {
+    max-width: 100%;
+    height: auto;
+}
+
+form {
+    max-width: 400px;
+    margin: 10px auto;
+    padding: 10px;
+    background-color: white;
+    border: 1px solid #ccc;
+}
+
+form input, form textarea {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+}
+
+button {
+    background-color: #333;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.product-card img {
+    width: 200px; 
+    height: 300px;
+    object-fit: contain;
+}

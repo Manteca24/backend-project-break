@@ -1,90 +1,196 @@
 const Product = require('../models/Product');
+const { getProductsCards, baseHTML } = require('../templates/templates');
 
-// Función para mostrar todos los productos
+// mostrar todos los productos
 const showProducts = async (req, res) => {
     try {
-        const products = await Product.find(); // Obtener todos los productos
-        res.json(products); 
+        const { category } = req.query; 
+        const filter = category ? { category } : {}; 
+
+        const products = await Product.find(filter); 
+        const productCards = getProductsCards(products, req.user);
+        const html = baseHTML(`
+            <h1>Catálogo de Productos</h1>
+            <section id="product-list">${productCards}</section>`, req.user);
+        res.send(html);
     } catch (error) {
         console.error(error);
-        res.status(500).send('Error al recuperar los productos'); 
+        res.status(500).send('Error al recuperar los productos');
     }
 };
 
-// Función para mostrar un producto por ID
+// mostrar un producto por ID
 const showProductById = async (req, res) => {
     const { productId } = req.params;
     try {
-        const product = await Product.findById(productId); 
+        const product = await Product.findById(productId);
         if (!product) {
-            return res.status(404).send('Producto no encontrado'); 
+            return res.status(404).send('Producto no encontrado');
         }
-        res.json(product); 
+        const html = baseHTML(`
+            <h1>Detalle del Producto</h1>
+            <div class="product-detail">
+                <img src="${product.image}" alt="${product.name}">
+                <h2>${product.name}</h2>
+                <p>${product.description}</p>
+                <p>Categoría: ${product.category}</p>
+                <p>Talla: ${product.size}</p>
+                <p>Precio: ${product.price}€</p>
+                <a href="${req.user ? '/dashboard' : '/products'}">Volver al catálogo</a>
+            </div>
+        `, req.user);
+        res.send(html);
     } catch (error) {
         console.error(error);
         res.status(500).send('Error al recuperar el producto');
     }
 };
 
-// Función para mostrar el formulario de nuevo producto
+// mostrar el formulario de nuevo producto
 const showNewProduct = (req, res) => {
-    res.send('Formulario para crear un nuevo producto'); // renderizar una vista
+    const html = baseHTML(`
+        <h1>Crear Nuevo Producto</h1>
+        <form action="/dashboard" method="POST">
+            <label for="name">Nombre:</label>
+            <input type="text" name="name" required>
+            <label for="description">Descripción:</label>
+            <textarea name="description" required></textarea>
+            <label for="category">Categoría:</label>
+            <input type="text" name="category" required>
+            <label for="size">Talla:</label>
+            <input type="text" name="size" required>
+            <label for="price">Precio:</label>
+            <input type="number" name="price" step="0.01" required>
+            <label for="image">URL de la Imagen:</label>
+            <input type="text" name="image" required>
+            <button type="submit">Crear Producto</button>
+        </form>
+        <a href="/dashboard">Volver al catálogo</a>
+    `, req.user);
+    res.send(html);
 };
 
-// Función para crear un nuevo producto
+// crear un nuevo producto
 const createProduct = async (req, res) => {
-    const newProduct = new Product(req.body); 
+    const { name, description, category, size, price, image } = req.body;
+    // Para convertir 'size' en un array
+    // const sizes = Array.isArray(size) ? size : [size];
+
+    const newProduct = new Product({
+        name,
+        description,
+        category,
+        size: sizes, // si size es array PENDIENTE 
+        price,
+        image,
+    });
+
     try {
-        const savedProduct = await newProduct.save(); 
-        res.status(201).json(savedProduct); 
+        const savedProduct = await newProduct.save();
+        res.redirect('/dashboard'); 
     } catch (error) {
         console.error(error);
-        res.status(400).send('Error al crear el producto'); 
+        res.status(400).send('Error al crear el producto: ' + error.message); 
     }
 };
 
-// Función para mostrar el formulario de edición de un producto
+// mostrar el formulario de edición de un producto
 const showEditProduct = async (req, res) => {
     const { productId } = req.params;
     try {
-        const product = await Product.findById(productId); 
+        const product = await Product.findById(productId);
         if (!product) {
-            return res.status(404).send('Producto no encontrado'); 
+            return res.status(404).send('Producto no encontrado');
         }
-        res.send(`Formulario para editar producto con ID: ${productId}`); // renderizar una vista con los datos del producto
+        const html = baseHTML(`
+            <h1>Editar Producto</h1>
+            <form action="/dashboard/${productId}" method="POST">
+                <label for="name">Nombre:</label>
+                <input type="text" name="name" value="${product.name}" required>
+                <label for="description">Descripción:</label>
+                <textarea name="description" required>${product.description}</textarea>
+                <label for="category">Categoría:</label>
+                <input type="text" name="category" value="${product.category}" required>
+                <label for="size">Talla:</label>
+                <input type="text" name="size" value="${product.size}" required>
+                <label for="price">Precio:</label>
+                <input type="number" name="price" value="${product.price}" step="0.01" required>
+                <label for="image">URL de la Imagen:</label>
+                <input type="text" name="image" value="${product.image}" required>
+                <button type="submit">Actualizar Producto</button>
+            </form>
+            <a href="/dashboard">Volver al catálogo</a>
+        `, req.user);
+        res.send(html);
     } catch (error) {
         console.error(error);
-        res.status(500).send('Error al recuperar el producto'); 
+        res.status(500).send('Error al recuperar el producto');
     }
 };
 
-// Función para actualizar un producto
+// actualizar un producto
 const updateProduct = async (req, res) => {
     const { productId } = req.params;
+    const { name, description, category, size, price, image } = req.body;
+
+    // // Para convertir 'size' en un array si es necesario
+    // const sizes = Array.isArray(size) ? size : [size];
+
+
+    if (!name || !description || !category || !sizes.length || !price || !image) {
+        return res.status(400).send('Todos los campos son obligatorios.');
+    }
+
+    // categoría
+    const validCategories = ['Camisetas', 'Pantalones', 'Zapatos', 'Sudaderas', 'Accesorios'];
+    if (!validCategories.includes(category)) {
+        return res.status(400).send('Categoría no válida.');
+    }
+
+    // TALLAS PENDIENTE _ NO funciona_________
+    const validShoeSizes = ['35', '36', '37', '38', '39', '40'];
+    const validClothingSizes = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'];
+    if (category === 'Zapatos' && !sizes.every(size => validShoeSizes.includes(size))) {
+        return res.status(400).send('Talla no válida para zapatos.');
+    } else if (category !== 'Zapatos' && !sizes.every(size => validClothingSizes.includes(size))) {
+        return res.status(400).send('Talla no válida para ropa.');
+    }
+
     try {
-        const updatedProduct = await Product.findByIdAndUpdate(productId, req.body, { new: true }); // Actualizar el producto
+        const updatedProduct = await Product.findByIdAndUpdate(productId, {
+            name,
+            description,
+            category,
+            size: sizes, // **
+            price,
+            image
+        }, { new: true });
+
         if (!updatedProduct) {
-            return res.status(404).send('Producto no encontrado'); 
+            return res.status(404).send('Producto no encontrado');
         }
-        res.json(updatedProduct); 
+        
+        res.redirect('/dashboard'); 
     } catch (error) {
         console.error(error);
-        res.status(400).send('Error al actualizar el producto'); 
+        res.status(400).send('Error al actualizar el producto: ' + error.message); // Mensaje de error más específico
     }
 };
 
-// Función para eliminar un producto
+// eliminar un producto
 const deleteProduct = async (req, res) => {
-    const { productId } = req.params;
+    const productId= req.params;
+    console.log(productId)
     try {
-        const deletedProduct = await Product.findByIdAndDelete(productId); 
+        const deletedProduct = await Product.findByIdAndDelete(productId);
+        console.log(deletedProduct)
         if (!deletedProduct) {
-            return res.status(404).send('Producto no encontrado'); 
+            return res.status(404).send('Producto no encontrado');
         }
-        res.send('Producto eliminado con éxito'); 
+        res.redirect('/dashboard'); 
     } catch (error) {
         console.error(error);
-        res.status(500).send('Error al eliminar el producto'); 
+        res.status(500).send('Error al eliminar el producto');
     }
 };
 

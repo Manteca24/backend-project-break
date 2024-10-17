@@ -1,6 +1,5 @@
 #  Tienda de Ropa
-Este proyecto es una tienda de ropa online con un catálogo de productos y un dashboard
-para que el administrador pueda gestionar los productos. Los productos están almacenados en una bse de datos de MongoDB en Atlas.
+Este proyecto es una tienda de ropa online con un catálogo de productos y un dashboard para que el administrador pueda gestionar los productos. Los productos están almacenados en una bse de datos de MongoDB en Atlas.
 
 ## Índice 
 - 
@@ -86,7 +85,16 @@ Dentro de test (bonus de testing):
 productController.test.js → Para escribir los tests de Jest.
 
 ## Base de datos
-El proyecto utiliza MongoDB como base de datos. Los productos se almacenan en una colección de MongoDB Atlas, con el siguiente [modelo]
+El proyecto utiliza MongoDB como base de datos. Los productos se almacenan en una colección de MongoDB Atlas modelo:
+
+### Crear el modelo de Product en models/Product.js 
+Campos del Modelo:
+- name (String, requerido): El nombre del producto.
+description (String, requerido): Una breve descripción del producto.
+- image (String, requerido): La URL de la imagen del producto.
+- category (String, requerido): La categoría del producto. Solo puede tener uno de los siguientes valores: Camisetas, Pantalones, Zapatos, Accesorios.
+- size (String, requerido): La talla del producto. Solo puede tener uno de los siguientes valores: XS, S, M, L, XL, 2XL, 3XL, 4XL.
+- price (Number, requerido): El precio del producto.
 
 ### Configuración de la base de datos
 
@@ -101,14 +109,6 @@ Conectamos con la base de datos requiriendo express, dotenv y connectDB en index
 · express.urlencoded: Se usa para manejar los datos enviados desde formularios HTML, permitiendo que el servidor pueda leer el contenido del body de las peticiones.
 · express.static: Sirve archivos estáticos, como imágenes, CSS, y otros recursos desde la carpeta public, haciendo que estén disponibles directamente al cliente.
 
-### Crear el modelo de Product en models/Product.js 
-Campos del Modelo:
-- name (String, requerido): El nombre del producto.
-description (String, requerido): Una breve descripción del producto.
-- image (String, requerido): La URL de la imagen del producto.
-- category (String, requerido): La categoría del producto. Solo puede tener uno de los siguientes valores: Camisetas, Pantalones, Zapatos, Accesorios.
-- size (String, requerido): La talla del producto. Solo puede tener uno de los siguientes valores: XS, S, M, L, XL, 2XL, 3XL, 4XL.
-- price (Number, requerido): El precio del producto.
 
 
 ## Rutas
@@ -169,3 +169,106 @@ El administrador puede autenticarse utilizando Firebase. Las rutas del dashboard
 ## API y documentación con Swagger
 Hemos creado una API REST que devuelve los datos en formato JSON para ser utilizada con un frontend en React. La API está documentada con Swagger para facilitar su uso. Para acceder a la documentación, dirígete a la siguiente URL en tu navegador: http://localhost:<PORT>/api-docs.
 La documentación de la API la tenemos en la carpeta docs.
+
+## Firebase
+
+# Configuración Básica:
+Crea un proyecto en Firebase Console y habilita Authentication con Email/Password.
+
+Añade las credenciales de Firebase en tu archivo .env:
+``
+FIREBASE_API_KEY=your_api_key
+FIREBASE_AUTH_DOMAIN=your_auth_domain
+FIREBASE_PROJECT_ID=your_project_id
+``
+
+Instala las dependencias:
+
+`npm install firebase-admin firebase`
+
+Inicializa Firebase en config/firebase.js:
+`const admin = require('firebase-admin');
+const serviceAccount = require('../path-to-your-service-account.json');
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+module.exports = admin;
+`
+
+# Controladores para Autenticación:
+
+Registro y Login en controllers/authController.js:
+`
+const firebase = require('firebase');
+firebase.initializeApp({
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+});
+
+// Registro de usuarios (administradores)
+exports.register = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await firebase.auth().createUserWithEmailAndPassword(email, password);
+    res.status(201).json({ message: 'Usuario registrado', user });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// Login de usuarios (administradores)
+exports.login = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await firebase.auth().signInWithEmailAndPassword(email, password);
+    const token = await user.user.getIdToken();
+    res.status(200).json({ message: 'Inicio de sesión exitoso', token });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+`
+# Middleware de Autenticación:
+En middlewares/authMiddleware.js:
+`
+const admin = require('../config/firebase');
+
+exports.verifyToken = async (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ message: 'No autorizado' });
+
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    req.user = decodedToken;
+    next();
+  } catch (error) {
+    res.status(401).json({ message: 'Token inválido o expirado' });
+  }
+};`
+
+# Rutas Protegidas:
+En routes/authRoutes.js, define las rutas de autenticación y protege las del dashboard:
+`
+const express = require('express');
+const { register, login } = require('../controllers/authController');
+const { verifyToken } = require('../middlewares/authMiddleware');
+const router = express.Router();
+
+router.post('/register', register);  // Ruta para registrar
+router.post('/login', login);        // Ruta para login
+
+router.get('/dashboard', verifyToken, (req, res) => {
+  res.status(200).json({ message: 'Acceso al dashboard' });
+});
+
+module.exports = router; `
+
+# Cómo Registrarse:
+Para registrar un administrador, puedes hacer una petición POST a la ruta /register enviando un JSON con el email y password:
+
+{
+  "email": "admin@example.com",
+  "password": "adminpassword"
+}
