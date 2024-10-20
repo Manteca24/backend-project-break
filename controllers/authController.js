@@ -40,7 +40,7 @@ const logout = async (req, res) => {
 // iniciar sesión verificando el ID token de Firebase
 const login = async (req, res) => {
     const { idToken } = req.body;
-
+    console.log(idToken)
     try {
         await auth.verifyIdToken(idToken); 
         // Si el token es válido, guarda el token en una cookie que es accesible solo por el servidor

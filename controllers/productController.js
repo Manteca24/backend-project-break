@@ -1,5 +1,5 @@
 const Product = require('../models/Product');
-const { getProductsCards, baseHTML } = require('../templates/templates');
+const { getProductsCards, baseHTML} = require('../templates/templates');
 
 // mostrar todos los productos
 const showProducts = async (req, res) => {
@@ -10,7 +10,7 @@ const showProducts = async (req, res) => {
         const products = await Product.find(filter); 
         const productCards = getProductsCards(products, req.user);
         const html = baseHTML(`
-            <h1>Catálogo de Productos</h1>
+            <h2>Catálogo de Productos</h2>
             <section id="product-list">${productCards}</section>`, req.user);
         res.send(html);
     } catch (error) {
@@ -28,17 +28,21 @@ const showProductById = async (req, res) => {
         }
 
         // Crear el botón de editar solo si el usuario está autenticado y la ruta es /dashboard/productId
-        const editButton = req.user ? `<a href="/dashboard/${productId}/edit"><button>Editar Producto</button></a>` : '';
+        const editButton = req.user ? `<a href="/dashboard/${productId}/edit"><button class="editbut">Editar Producto</button></a>` : '';
 
         const html = baseHTML(`
-            <h1>Detalle del Producto</h1>
+            <h2>Detalle del Producto</h2>
             <div class="product-detail">
                 <img src="${product.image}" alt="${product.name}">
-                <h2>${product.name}</h2>
-                <p>${product.description}</p>
-                <p>Categoría: ${product.category}</p>
-                <p>Talla: ${product.size}</p>
-                <p>Precio: ${product.price}€</p>
+                <div class="product-info">
+                    <h3>${product.name}</h2>
+                    <p>${product.description}</p>
+                    <p>Categoría: ${product.category}</p>
+                    <p>Talla: ${product.size}</p>
+                    <p>Precio: ${product.price}€</p>
+                </div>    
+            </div>
+            <div class="editDiv">
                 ${editButton} <!-- Aquí se inserta el botón de editar -->
                 <a href="${req.user ? '/dashboard' : '/products'}">Volver al catálogo</a>
             </div>
@@ -52,9 +56,9 @@ const showProductById = async (req, res) => {
 
 
 // mostrar el formulario de nuevo producto
-const showNewProduct = (req, res) => {
+const showNewProductform = (req, res) => {
     const html = baseHTML(`
-        <h1>Crear Nuevo Producto</h1>
+        <h2>Crear Nuevo Producto</h2>
         <form action="/dashboard" method="POST">
             <label for="name">Nombre:</label>
             <input type="text" name="name" required>
@@ -98,7 +102,7 @@ const createProduct = async (req, res) => {
 };
 
 // mostrar el formulario de edición de producto
-const showEditProduct = async (req, res) => {
+const showEditProductform = async (req, res) => {
     const { productId } = req.params;
     try {
         const product = await Product.findById(productId);
@@ -107,7 +111,7 @@ const showEditProduct = async (req, res) => {
         }
 
         const html = baseHTML(`
-            <h1>Editar Producto</h1>
+            <h2>Editar Producto</h2>
             <form action="/dashboard/${productId}" method="POST">
                 <label for="name">Nombre:</label>
                 <input type="text" name="name" value="${product.name}" required>
@@ -123,8 +127,10 @@ const showEditProduct = async (req, res) => {
                 <input type="text" name="image" value="${product.image}" required>
                 <button type="submit">Actualizar Producto</button>
             </form>
-            <button onclick="removeProduct('${productId}')">Eliminar Producto</button>
+            <div class="deleteDiv">
+            <button class="deletebut" onclick="removeProduct('${productId}')">Eliminar Producto</button>
             <a href="/dashboard">Volver al catálogo</a>
+            </div>
         `, req.user);
 
         res.send(html);
@@ -189,9 +195,9 @@ const deleteProduct = async (req, res) => {
 module.exports = {
     showProducts,
     showProductById,
-    showNewProduct,
+    showNewProductform,
     createProduct,
-    showEditProduct,
+    showEditProductform,
     updateProduct,
     deleteProduct,
 };

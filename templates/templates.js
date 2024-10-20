@@ -4,9 +4,9 @@ const getProductsCards = (products, user) => {
         html += `
         <div class="product-card">
             <img src="${product.image}" alt="${product.name}">
-            <h2>${product.name}</h2>
+            <h3>${product.name}</h3>
             <p>${product.description}</p>
-            <p>Precio: ${product.price}€</p>
+            <p>${product.price}€</p>
              <a href="${user ? `/dashboard/${product._id}` : `/products/${product._id}`}">Ver detalle</a>
         </div>
         
@@ -22,8 +22,8 @@ const baseHTML = (content, user) => {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="/styles.css">
-        <script src="/templates.js"></script>
         <title>Tienda de Ropa</title>
+        <script type="module" src="/templates.js"></script>
     </head>
     <body>
         <header>
@@ -40,8 +40,8 @@ const baseHTML = (content, user) => {
                 </ul>
             </nav>
         <h1>La tienda de Agos</h1>
-        ${user ? `<p>Sesión iniciada como ${user.email}</p>` : ''}
-        
+        ${user ? `<p class="session-message">Sesión iniciada como ${user.email}</p>` : ''}
+        <div id="notification" style="display: none;"></div>
         </header>
         <main>
             ${content}
@@ -49,6 +49,35 @@ const baseHTML = (content, user) => {
         <footer>
             <p>&copy; 2024 Tienda de Ropa de Agos</p>
         </footer>
+        <script>
+            const removeProduct = async (productId) => {
+                try {
+                    const response = await fetch(\`/dashboard/\${productId}/delete\`, {
+                        method: 'DELETE',
+                    });
+            const notification = document.getElementById('notification');
+
+            if (response.ok) {
+                // Muestra el mensaje de éxito
+                notification.innerText = 'Producto eliminado con éxito. Redirigiendo a la página principal...';
+                notification.style.display = 'block'; // Muestra el mensaje
+
+                // Redirige al dashboard después de 2 segundos
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 2000);
+            } else {
+                // Maneja el caso en el que no se pueda eliminar
+                const errorMessage = await response.text();
+                notification.innerText = 'Error al eliminar el producto: ' + errorMessage;
+                notification.style.display = 'block'; // Muestra el mensaje
+            }
+                } catch (error) {
+                    console.error('Error en la solicitud', error);
+                    alert('Hubo un error en la solicitud.');
+                }
+            }
+        </script> 
     </body>
     </html>
     `
@@ -82,32 +111,10 @@ const registerForm = () => {
   }
   
 
-const removeProduct = async (productId) =>{
-    try {
-        const response = await fetch(`/dashboard/${productId}/delete`, {
-            method: 'DELETE',
-        });
-
-        if (response.ok) {
-            // Si se elimina correctamente, recarga la página o redirige
-            alert('Producto eliminado con éxito');
-            window.location.reload(); // recarga la página actual
-        } else {
-            // Maneja el caso en el que no se pueda eliminar
-            const errorMessage = await response.text();
-            alert('Error al eliminar el producto: ' + errorMessage);
-        }
-    } catch (error) {
-        console.error('Error en la solicitud', error);
-        alert('Hubo un error en la solicitud.');
-    }
-}
 
 module.exports = {
     getProductsCards,
     baseHTML, 
     loginForm,
     registerForm,
-    removeProduct
-
 }

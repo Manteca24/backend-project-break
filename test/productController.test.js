@@ -1,3 +1,4 @@
+//**********no funciona con firebase. PENDIENTE */
 const request = require('supertest');
 const app = require('../index'); 
 const mongoose = require('mongoose');
@@ -22,20 +23,6 @@ beforeAll(async () => {
         throw error; 
     }
 });
-
-
-// // Antes de todas las pruebas, podrías autenticar a un usuario ficticio y obtener un token
-// beforeAll(async () => {
-//     const authResponse = await request(app)
-//         .post('/dashboard/login') // Asegúrate de tener una ruta para la autenticación
-//         .send({
-//             email: 'agozavia@gmail.com', // Usuario ficticio
-//             password: '123456', // Contraseña ficticia
-//         });
-    
-//     token = authResponse.body.token; // Guarda el token para usarlo en las pruebas
-// });
-
 
 // Desconectar de la base de datos después de todas las pruebas
 afterAll(async () => {

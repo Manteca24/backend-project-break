@@ -3,16 +3,18 @@ const {dbConnection} = require('./config/db');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocs = require('./docs/index'); 
 require('dotenv').config();
+const path = require('path')
+const cookieParser = require('cookie-parser');
+
 
 // firebase
-const cookieParser = require('cookie-parser');
-// const bodyParser = require('body-parser')
-const path = require('path')
-const admin = require('firebase-admin');
-const serviceAccount = require('./config/firebase')
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount) 
-})
+  const admin = require('firebase-admin');
+  const serviceAccount = require('./config/firebase')
+  admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount) 
+  })
+
+
 
 // Crear la app de Express
 const app = express();
@@ -26,9 +28,9 @@ app.use(express.json());
 // Middleware para manejar datos de formularios (body)
 app.use(express.urlencoded({ extended: true }));
 
-// Servir archivos estáticos desde la carpeta 'public'
+// Servir archivos estáticos desde la carpeta 'public' y 'templates'
 app.use(express.static(path.join(__dirname, 'public')))
-app.use(express.static(path.join(__dirname, 'templates')));  //*** */
+app.use(express.static(path.join(__dirname, 'templates'))); /**/ 
 
 // sin esta linea no lee el token
 app.use(cookieParser());
@@ -38,7 +40,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 //rutas 
 const router = require('./routes/productRoutes');
-app.use('/', router); // Registrar las rutas de productos
+app.use('/', router);
 const authRouter = require('./routes/authRoutes')
 app.use('/', authRouter)
 
