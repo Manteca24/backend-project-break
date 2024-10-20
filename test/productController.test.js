@@ -3,6 +3,9 @@ const app = require('../index');
 const mongoose = require('mongoose');
 const Product = require('../models/Product'); 
 
+let token;
+
+
 // Conectar a la base de datos antes de todas las pruebas
 beforeAll(async () => {
     console.log('Conectando a la base de datos de pruebas...');
@@ -21,6 +24,19 @@ beforeAll(async () => {
 });
 
 
+// // Antes de todas las pruebas, podrías autenticar a un usuario ficticio y obtener un token
+// beforeAll(async () => {
+//     const authResponse = await request(app)
+//         .post('/dashboard/login') // Asegúrate de tener una ruta para la autenticación
+//         .send({
+//             email: 'agozavia@gmail.com', // Usuario ficticio
+//             password: '123456', // Contraseña ficticia
+//         });
+    
+//     token = authResponse.body.token; // Guarda el token para usarlo en las pruebas
+// });
+
+
 // Desconectar de la base de datos después de todas las pruebas
 afterAll(async () => {
     await Product.deleteMany();
@@ -32,7 +48,7 @@ describe('Product management', () => {
 
     it('should create a product', async () => {
         const response = await request(app)
-            .post('/products/dashboard') 
+            .post('/dashboard/new') 
             .send({
                 name: 'Camiseta',
                 description: 'Camiseta de algodón',
@@ -49,26 +65,26 @@ describe('Product management', () => {
     });
 
     it('should retrieve all products', async () => {
-        const response = await request(app).get('/products/dashboard'); 
+        const response = await request(app).get('/products'); 
         expect(response.status).toBe(200);
         expect(Array.isArray(response.body)).toBe(true);
     });
 
     it('should retrieve a product by ID', async () => {
-        const response = await request(app).get(`/products/dashboard/${productId}`); 
+        const response = await request(app).get(`/products/${productId}`); 
         expect(response.status).toBe(200);
         expect(response.body).toHaveProperty('_id', productId.toString()); ////!!!!!!!!!!!!! toSTRING
     });
 
     it('should return 404 if product not found', async () => {
-        const response = await request(app).get('/products/products/60b9c5e3f1c7c66c3a2c75f0'); // Un ID que no existe
+        const response = await request(app).get('/products/60b9c5e3f1c7c66c3a2c75f0'); // Un ID que no existe
         expect(response.status).toBe(404);
         expect(response.text).toBe('Producto no encontrado');
     });
 
     it('should update a product', async () => {
         const response = await request(app)
-            .put(`/products/dashboard/${productId}`)
+            .put(`/dashboard/${productId}/edit`)
             .send({
                 name: 'Camiseta Actualizada',
                 description: 'Camiseta de algodón azul',
@@ -85,20 +101,20 @@ describe('Product management', () => {
 
     it('should return 404 if product to update not found', async () => {
         const response = await request(app)
-            .put('/products/dashboard/60b9c5e3f1c7c66c3a2c75f0') // ID que no existe
+            .put('/dashboard/60b9c5e3f1c7c66c3a2c75f0') // ID que no existe
             .send({ name: 'Producto Inexistente' });
         expect(response.status).toBe(404);
         expect(response.text).toBe('Producto no encontrado');
     });
 
     it('should delete a product', async () => {
-        const response = await request(app).delete(`/products/dashboard/${productId}/delete`); 
+        const response = await request(app).delete(`/dashboard/${productId}/delete`); 
         expect(response.status).toBe(200);
         expect(response.text).toBe('Producto eliminado con éxito');
     });
 
     it('should return 404 if product to delete not found', async () => {
-        const response = await request(app).delete('/products/dashboard/60b9c5e3f1c7c66c3a2c75f0/delete'); // ID que no existe
+        const response = await request(app).delete('/dashboard/60b9c5e3f1c7c66c3a2c75f0/delete'); // ID que no existe
         expect(response.status).toBe(404);
         expect(response.text).toBe('Producto no encontrado');
     });

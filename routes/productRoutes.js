@@ -6,7 +6,7 @@ const {
     createProduct, 
     showEditProduct, 
     updateProduct, 
-    deleteProduct 
+    deleteProduct
 } = require('../controllers/productController');
 
 const checkAuth = require('../middlewares/authMiddleware');
@@ -21,7 +21,7 @@ router.get('/dashboard', checkAuth, showProducts);
 router.get('/dashboard/new', checkAuth, showNewProduct); 
 router.post('/dashboard', checkAuth, createProduct); 
 router.get('/dashboard/:productId', checkAuth, showProductById);
-router.get('/products/:productId/edit', checkAuth, showEditProduct); 
+router.get('/dashboard/:productId/edit', checkAuth, showEditProduct); 
 router.post('/dashboard/:productId', checkAuth, updateProduct); 
 router.delete('/dashboard/:productId/delete', checkAuth, deleteProduct); 
 

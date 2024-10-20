@@ -17,6 +17,7 @@ admin.initializeApp({
 // Crear la app de Express
 const app = express();
 
+
 // Conectar a la base de datos
 dbConnection();
 
@@ -27,6 +28,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Servir archivos estáticos desde la carpeta 'public'
 app.use(express.static(path.join(__dirname, 'public')))
+app.use(express.static(path.join(__dirname, 'templates')));  //*** */
 
 // sin esta linea no lee el token
 app.use(cookieParser());
