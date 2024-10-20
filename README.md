@@ -66,7 +66,35 @@ FIREBASE_PROJECT_ID=<tu_project_id>
 Podrás acceder a la aplicación desde tu navegador en `http://localhost:${PORT}`
 
 ## Estructura del proyecto
-![alt text](image.png)
+```
+.
+├── config
+│   ├── db.js                   # Configuración de la conexión a MongoDB
+│   └── firebase.js             # Configuración de Firebase
+├── controllers
+│   ├── productController.js    # Controlador para manejar productos
+│   └── authController.js       # Controlador para autenticación
+├── docs
+│   └── basicInfo.js  
+|    └── components.js 
+|    └── index.js 
+|    └── products.js            # Para la documentación de la API en swagger
+├── middlewares
+│   └── authMiddleware.js       # Middleware de autenticación
+├── models
+│   └── Product.js              # Modelo de producto
+├── routes
+│   ├── productRoutes.js        # Rutas de productos
+│   └── authRoutes.js           # Rutas de autenticación
+├── public
+│   ├── utils  
+|   |  └── configLogin          # Archivo para inicializar Firebase
+│   ├── styles.css              # Estilos CSS
+│   └── images                  # Imágenes de productos
+├── .env                        # Variables de entorno
+├── index.js                    # Archivo principal del servidor
+└── package.json                # Archivo con las dependencias del proyecto
+```
 
 ## API 
 La API del proyecto está documentada con Swagger. Puedes acceder a la documentación en: `http://localhost:${PORT}/api-docs`.
