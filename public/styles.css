@@ -238,3 +238,35 @@ footer{
     z-index: 1000; 
     display: none; 
 }
+
+/*RESPONSIVE----------------------*/
+
+@media (max-width: 600px) {
+    h1{
+        font-size: 50px;
+    }
+
+    nav ul {
+        gap: 5px;
+        display: flex; 
+        padding: 2px; 
+        list-style: none;
+        flex-direction: column;
+    }
+
+    ul{
+        margin: 5px 5px;
+    }
+    
+    h2{
+        font-size: 20px;
+    }
+
+    .product-detail{
+        flex-direction: column;
+    }
+
+    .product-detail img {
+        width: 100%;
+    }
+}
